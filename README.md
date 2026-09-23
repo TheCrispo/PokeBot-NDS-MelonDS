@@ -13,7 +13,7 @@ See [`MODIFICATIONS.md`](MODIFICATIONS.md) for a more detailed record of changes
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/en)
-- A compatible Lua-enabled emulator. This fork is developed and tested primarily with the accompanying **melonDS PokéBot Lua build**.
+- A compatible Lua-enabled emulator. This fork is developed and tested primarily with the accompanying **melonDS PokéBot Lua build** (https://github.com/TheCrispo/melonDS-PokeBot-Lua).
 
 ### Installation
 
