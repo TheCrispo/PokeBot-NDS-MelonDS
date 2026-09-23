@@ -5,6 +5,8 @@ This repository is dedicated to creating a multi-purpose automated tool for the 
 
 Reported [Issues](https://github.com/wyanido/pokebot-nds/issues) and donations are very appreciated, as making this project widely compatible as the sole developer takes a lot of time and work.
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B7RMWPP)
+
 ## Getting Started
 #### Prerequisites
 You'll need to install [node.js](https://nodejs.org/en), and have a recent version of [BizHawk](https://github.com/TASEmulators/BizHawk/releases/latest) or [DeSmuME](https://github.com/TASEmulators/desmume/releases/latest) in order to use this tool. 
@@ -14,8 +16,6 @@ You'll need to install [node.js](https://nodejs.org/en), and have a recent versi
 _(You can also clone the [dev branch](https://github.com/wyanido/pokebot-nds/tree/dev) to preview upcoming features)_
 
 Alternatively, download [the latest release](https://github.com/wyanido/pokebot-nds/releases/latest) as a .zip archive and extract it anywhere you like.
-
-**Note**: Keep the folder as a whole. **DO NOT** just extract the .lua file.
 
 #### Setup
 1. Start the dashboard with `start-dashboard.bat`, or run these commands inside the `dashboard/` folder:
@@ -50,13 +50,6 @@ The game will then be connected to the dashboard, which you can view info for on
 | Thief farming			| ✅ | ✅ | ✅ | ✅ |
 | Pickup farming		| ✅ | ✅ | ✅ | ✅ |
 | Voltorb Flip		|  | ✅ |  |  |
-
-#### Supported Languages
-English is the only supported language for Gen 4 (Diamond, Pearl, Platinum, HeartGold & SoulSilver), with minimal support with non-English languages.
-
-All languages are supported for Gen 5 games (Black, White & their sequels).
-
-This is due to the internal structures of the two generations being wildly different. Gen 5's data remains consistent between languages, but Gen 4's data changes depending on the language. While a ROM offset has been applied for non-English ROMs, there will undoubtedly be issues.
 
 ## Special Thanks
 

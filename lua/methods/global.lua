@@ -24,12 +24,26 @@ end
 --- Continuously reels in Pokemon with the registered fishing rod
 function mode_fishing()
     while not game_state.in_battle do
+        local before_cast = mbyte(pointers.fishing_bite_indicator)
+        print(string.format("Fishing debug: before cast indicator=%d", before_cast))
+
         press_button("Y")
         wait_frames(60)
 
-        while not fishing_status_changed() do 
+        local last_indicator = mbyte(pointers.fishing_bite_indicator)
+        print(string.format("Fishing debug: after cast wait indicator=%d", last_indicator))
+
+        while not fishing_status_changed() do
             wait_frames(1)
+            local indicator = mbyte(pointers.fishing_bite_indicator)
+            if indicator ~= last_indicator then
+                print(string.format("Fishing debug: indicator changed %d -> %d", last_indicator, indicator))
+                last_indicator = indicator
+            end
         end
+
+        local result_indicator = mbyte(pointers.fishing_bite_indicator)
+        print(string.format("Fishing debug: status detected indicator=%d bite=%s", result_indicator, tostring(fishing_has_bite())))
 
         if fishing_has_bite() then
             print("Landed a Pokemon!")
@@ -128,6 +142,29 @@ function subdue_pokemon()
     end
 end
 
+
+-- Platinum: exact live Poké Ball pocket location.
+-- pt.lua's `anchor` is the live Platinum small save block address + 0x14.
+-- The documented Platinum Balls pocket is at save offset 0xCEC.
+-- Therefore the live pocket is:
+--     anchor + (0xCEC - 0x14) = anchor + 0xCD8
+--
+-- This is also consistent with pt.lua:
+--   trainer name = anchor + 0x7C  (save 0x68 + 0x14)
+--   trainer ID   = anchor + 0x8C  (save 0x78 + 0x14)
+local function get_platinum_ball_pocket()
+    if pointers.poke_balls_pocket then
+        return pointers.poke_balls_pocket
+    end
+
+    local anchor = mdword(0x021C0794 + _ROM.offset)
+    if anchor == 0 then
+        return nil
+    end
+
+    return anchor + 0xCD8
+end
+
 --- Continuously tries to catch the foe until the battle ends, or there are no valid Poke Balls left
 function catch_pokemon()
     local function get_preferred_ball(balls)
@@ -161,26 +198,19 @@ function catch_pokemon()
     end
 
     local function use_ball(index)
+        -- Platinum's battle-ball layout in this ROM exposes a single page.
+        -- Do not use the generic left/right page taps: the lower-left control
+        -- is BACK on this layout.
         local page = math.floor((index - 1) / 6)
-        local current_page = mbyte(pointers.battle_bag_page)
-
-        while current_page ~= page do -- Scroll to page with ball
-            if current_page < page then
-                touch_screen_at(58, 180)
-                current_page = current_page + 1
-            else
-                touch_screen_at(17, 180)
-                current_page = current_page - 1
-            end
-
-            wait_frames(30)
+        if page ~= 0 then
+            abort("Selected Poke Ball is beyond the first Platinum battle-bag page")
         end
 
-        -- Select and use ball
         local button = (index - 1) % 6 + 1
         local x = 80 * ((button - 1) % 2 + 1)
         local y = 30 + 50 * math.floor((button - 1) / 2)
 
+        print_debug(string.format("Selecting Platinum visible ball slot %d at (%d,%d)", index, x, y))
         touch_screen_at(x, y)
         wait_frames(30)
         touch_screen_at(108, 176) -- USE
@@ -191,7 +221,32 @@ function catch_pokemon()
     end
 
     while game_state.in_battle do
-        local balls = get_usable_balls()
+        -- Platinum battle bag uses the live Bag.pokeballs array.
+        -- Empty slots are compacted by the game, so the non-empty entries
+        -- correspond directly to the visible battle-bag slots.
+        local balls = {}
+        local visible_slot = 1
+        local ball_pocket = get_platinum_ball_pocket()
+
+        if not ball_pocket then
+            abort("Could not locate Platinum save data in RAM")
+        end
+
+        print_debug(string.format("Platinum Balls pocket: %08X", ball_pocket))
+
+        for i = ball_pocket, ball_pocket + 0x38, 4 do
+            local count = mword(i + 2)
+            if count > 0 then
+                local id = mword(i)
+                local item_name = _ITEM[id + 1]
+                if item_name then
+                    balls[string.lower(item_name)] = visible_slot
+                    print_debug("Platinum visible ball slot " .. visible_slot .. ": " .. item_name .. " x" .. count)
+                    visible_slot = visible_slot + 1
+                end
+            end
+        end
+
         local ball_index = get_preferred_ball(balls)
         
         if ball_index == -1 then
@@ -291,8 +346,6 @@ function process_wild_encounter()
         end
     end
 
-    wait_frames(90)
-    
     if config.pickup then
         do_pickup()
     end
@@ -330,19 +383,48 @@ end
 --- Saves the game
 function save_game()
     print("Saving game...")
-    
+
+    -- A movement mode may have been holding a direction immediately before the
+    -- target encounter.  Start the save sequence from a completely neutral
+    -- controller state so that input cannot leak into the menu/save dialogue.
+    print_debug("Save: releasing all inputs before opening the menu.")
+    clear_all_inputs()
+    wait_frames(12)
+
+    print_debug("Save: opening the Save menu option.")
     open_menu("Save")
+
+    print_debug("Save: confirming the save prompts.")
+    clear_all_inputs()
     press_sequence("A", 90, "A", 60)
     
-    while mbyte(pointers.save_indicator) ~= 0 do
-        press_sequence("A", 12)
+    -- Some game-specific pointer tables (notably Platinum) do not expose
+    -- save_indicator.  Do not try to read a nil address in that case.
+    if pointers.save_indicator ~= nil then
+        print_debug("Save: waiting for save_indicator to report completion.")
+        while mbyte(pointers.save_indicator) ~= 0 do
+            press_sequence("A", 12)
+        end
+    else
+        print_debug("No save_indicator pointer for this game; using timed save completion fallback.")
+        print_debug("Save: waiting through Platinum save completion window.")
+        for i = 1, 50 do
+            press_sequence("A", 12)
+        end
     end
 
     if _EMU == "BizHawk" then
         client.saveram() -- Flush save ram to the disk	
     end
 
+    print_debug("Save: closing any remaining save dialogue.")
+    clear_all_inputs()
     press_sequence("B", 10)
+
+    -- Do not return to the active mode with a stale held direction/button.
+    clear_all_inputs()
+    wait_frames(12)
+    print_debug("Save: sequence finished with all inputs released.")
 end
 
 -- Selects a move on the FIGHT menu
@@ -360,10 +442,27 @@ end
 
 --- Attemps to KO the current foe
 function battle_foe()
-    while get_battle_state() ~= "Menu" do
-        press_sequence("B", 5) -- Also cancels evolutions
+    local waiting_for_manual_replacement = false
 
-        if not get_battle_state() then -- Battle finished, back in the overworld
+    while get_battle_state() ~= "Menu" do
+        local battle_state = get_battle_state()
+
+        -- Do not automatically switch Pokemon during battle. If Platinum opens
+        -- the forced party screen after a faint, leave the controls untouched
+        -- and wait for the player to choose the replacement manually.
+        if battle_state == "Pokemon" then
+            if not waiting_for_manual_replacement then
+                print_warn("Active Pokemon fainted. Waiting for manual replacement...")
+                clear_all_inputs()
+                waiting_for_manual_replacement = true
+            end
+            wait_frames(1)
+        else
+            waiting_for_manual_replacement = false
+            press_sequence("B", 5) -- Also cancels evolutions
+        end
+
+        if not game_state.in_battle then -- Battle finished, back in the overworld
             return
         elseif get_battle_state() == "New Move" then -- These cases are annoying and require specific inputs to cancel
             wait_frames(30)
@@ -379,10 +478,17 @@ function battle_foe()
         end
     end
     
-    local best_move = pokemon.find_best_attacking_move(party[get_lead_mon_index()], foe[1])
+    -- Refresh the party immediately before choosing an attack so current PP is used.
+    -- PP is stored in the party Pokemon data and can change after every move.
+    update_party()
+
+    local lead = get_lead_mon_index()
+    local best_move = pokemon.find_best_attacking_move(party[lead], foe[1])
     
     if best_move.power > 0 then
-        print_debug("Best move is " .. best_move.name .. " (Avg Power: " .. best_move.power .. ")")
+        local current_pp = party[lead].pp[best_move.index] or 0
+        print_debug("Best move is " .. best_move.name .. " (Avg Power: " .. best_move.power ..
+            ", PP: " .. current_pp .. ")")
         use_move(best_move.index)
     else
         print("Lead Pokemon has no valid moves left to battle! Fleeing...")
@@ -429,6 +535,13 @@ function check_party_status()
         end
 
         print("Next replacement is " .. party[replacement].name .. " (Slot " .. replacement .. ")")
+
+        -- Step 40: keep the original switching routine unchanged, but allow
+        -- Platinum six seconds to settle before any switching/menu inputs.
+        clear_all_inputs()
+        wait_frames(360)
+        clear_all_inputs()
+
         open_menu("Pokemon")
         
         -- Highlight lead
@@ -457,6 +570,17 @@ function check_party_status()
 
         if party[lead].heldItem ~= "none" and pokemon.get_move_slot(party[lead], "Thief") ~= 0 then
             print("Thief Pokemon already holds an item. Removing...")
+
+            -- Step 48: after a battle, D/P/Pt can report that the battle has ended
+            -- before overworld/menu input is actually safe.  If we try to open the
+            -- Pokemon menu during that transition, X can be ignored and open_menu()
+            -- can end up repeatedly sending a direction in the overworld.
+            -- Reuse the same six-second settling period already proven reliable by
+            -- the Step 40 post-battle lead-switch routine.
+            clear_all_inputs()
+            if _ROM.version == "D" or _ROM.version == "P" or _ROM.version == "PL" then
+                wait_frames(360)
+            end
             clear_all_inputs()
 
             open_menu("Pokemon")

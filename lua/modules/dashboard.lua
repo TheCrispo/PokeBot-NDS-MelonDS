@@ -32,9 +32,18 @@ function dashboard_poll()
         return
     end
     
-    local _, err, data = dashboard:receive()
-    
-    if data ~= "" then
+    local ok, _, err, data = pcall(function()
+        local a, b, c = dashboard:receive()
+        return a, b, c
+    end)
+
+    if not ok then
+        print_warn("Dashboard socket is no longer open; disabling dashboard communication.")
+        disconnected = true
+        return
+    end
+
+    if data ~= nil and data ~= "" then
         local response = json.decode(data)
         
         if response.type == "apply_config" then
@@ -43,7 +52,7 @@ function dashboard_poll()
         end
     end
 
-    if err == "closed" then
+    if err == "closed" or err == "shutdown" or err == "timeout" and dashboard == nil then
         print_warn("Dashboard disconnected!")
         disconnected = true
     end
@@ -55,7 +64,17 @@ function dashboard_send(data)
         return 
     end
 
-    dashboard:send(json.encode(data) .. "\0")
+    local ok, err = pcall(function()
+        dashboard:send(json.encode(data) .. "\0")
+    end)
+
+    if not ok then
+        print_warn("Dashboard socket is no longer open; disabling dashboard communication.")
+        disconnected = true
+    elseif err == "closed" or err == "shutdown" then
+        print_warn("Dashboard disconnected!")
+        disconnected = true
+    end
 end
 
 -----------------------------------------------------------------------------
