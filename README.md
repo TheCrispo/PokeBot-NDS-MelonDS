@@ -1,55 +1,89 @@
-# PokéBot NDS
+# PokéBot NDS — DPPt Enhanced
+
 <img src='https://i.imgur.com/lHaYC4z.png' width='600px'>
 
-This repository is dedicated to creating a multi-purpose automated tool for the mainline DS Pokémon games. The bot can perform most monotonous tasks in these games, with all languages supported.
+An unofficial fork of **PokéBot NDS by wyanido**, focused on improved Pokémon Diamond, Pearl and Platinum automation and melonDS Lua compatibility.
 
-Reported [Issues](https://github.com/wyanido/pokebot-nds/issues) and donations are very appreciated, as making this project widely compatible as the sole developer takes a lot of time and work.
+This fork keeps the original PokéBot functionality while adding and refining D/P/Pt automation, including improved daycare and egg-hatching behaviour, automatic PC depositing, encounter and battle timing fixes, Platinum compatibility improvements, and restored D/P/Pt starter resets.
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B7RMWPP)
+See [`MODIFICATIONS.md`](MODIFICATIONS.md) for a more detailed record of changes made in this fork.
 
 ## Getting Started
-#### Prerequisites
-You'll need to install [node.js](https://nodejs.org/en), and have a recent version of [BizHawk](https://github.com/TASEmulators/BizHawk/releases/latest) or [DeSmuME](https://github.com/TASEmulators/desmume/releases/latest) in order to use this tool. 
 
-#### Installation
-**Recommended**: Install [Github Desktop](https://desktop.github.com/) and locally clone this repository to stay up to date with the latest versions of the bot.
-_(You can also clone the [dev branch](https://github.com/wyanido/pokebot-nds/tree/dev) to preview upcoming features)_
+### Prerequisites
 
-Alternatively, download [the latest release](https://github.com/wyanido/pokebot-nds/releases/latest) as a .zip archive and extract it anywhere you like.
+- [Node.js](https://nodejs.org/en)
+- A compatible Lua-enabled emulator. This fork is developed and tested primarily with the accompanying **melonDS PokéBot Lua build**.
 
-#### Setup
-1. Start the dashboard with `start-dashboard.bat`, or run these commands inside the `dashboard/` folder:
-    - `npm i`
-    - `npm start`
-2. Use the dashboard's Config tab to customise the bot behaviour for your current task. 
-3. Open your emulator's Lua Console, and load `pokebot-nds.lua`.
-    - **BizHawk**: `Tools > Lua Console`
-    - **DeSmuME**: `Tools > Lua Scripting > New Lua Script Window`
+### Installation
 
-The game will then be connected to the dashboard, which you can view info for on the Dashboard tab. The bot will immediately start acting according to your Config, and log any encounters to the dashboard.
+Clone or download this repository to your computer.
 
-## Bot Modes
-|  						| DPPt | HGSS | BW | B2W2 | 
-|--						| :-: | :-: | :-: | :-: |
-| Starter resets 		| ✅ | ✅ | ✅ | ✅ |
-| Random encounters		| ✅ | ✅ | ✅ | ✅ |
-| Phenomenon encounters		|  |  | ✅ | ✅ |
-| Gift resets 			| ✅ | ✅ | ✅ | ✅ |
-| Static encounters 	| ✅ | ✅ | ✅ | ✅ |
-| Fishing			   	| ✅ | ✅ | ✅ | ✅ |
-| Egg hatching			| ✅ | ✅ | ✅ | ✅ |
-| Headbutt Trees 		|  | ✅ |  |  |
-| Thundurus/Tornadus dex resets 			|  |  | ✅ |  |
-| Hidden Grottos 	|  |  |  | ✅ |
+If downloading a release, extract the archive somewhere convenient before starting the bot.
 
-#### Additional Features
-|  						| DPPt | HGSS | BW | B2W2 | 
-|--						| :-: | :-: | :-: | :-: |
-| Auto-catching			| ✅ | ✅ | ✅ | ✅ |
-| Auto-battling			| ✅ | ✅ | ✅ | ✅ |
-| Thief farming			| ✅ | ✅ | ✅ | ✅ |
-| Pickup farming		| ✅ | ✅ | ✅ | ✅ |
-| Voltorb Flip		|  | ✅ |  |  |
+### Setup
+
+1. Start the dashboard with `start-dashboard.bat`, or run the following commands inside the `dashboard/` folder:
+   - `npm i`
+   - `npm start`
+2. Use the dashboard **Config** tab to configure the bot for the task you want to perform.
+3. Open the emulator's Lua Console and load `pokebot-nds.lua`.
+4. Once connected, PokéBot will begin operating according to the selected configuration and encounters will be logged to the dashboard.
+
+## D/P/Pt Support
+
+The fork retains the original PokéBot modes while expanding and fixing support for Pokémon Diamond, Pearl and Platinum.
+
+| Mode / Feature | D/P/Pt |
+|---|:-:|
+| Starter resets | ✅ |
+| Random encounters | ✅ |
+| Random encounters (small areas) | ✅ |
+| Gift resets | ✅ |
+| Static encounters | ✅ |
+| Roamers | ✅ |
+| Fishing | ✅ |
+| Egg hatching | ✅ |
+| Automatic daycare handling | ✅ |
+| Automatic PC depositing after hatching | ✅ |
+| Auto-catching | ✅ |
+| Auto-battling | ✅ |
+| Thief farming | ✅ |
+| Pickup farming | ✅ |
+
+Other game-specific functionality from the original PokéBot project remains in the source where applicable.
+While the other Pokémon game have not been tested you are welcome to try them out and see if they work. There will be future updates bringing enchancements and compatibility.
+
+## D/P/Pt Enhancements
+
+This fork includes (Relevent to MelonDS with Lua compatibilty) :
+
+- Expanded D/P/Pt daycare and egg-hatching automation.
+- Automatic depositing of newly hatched non-target Pokémon into the PC.
+- Protection for party slot 1 during automatic depositing.
+- Live PC box scanning for Diamond, Pearl and Platinum.
+- Automatic selection of a PC box with available space.
+- Improved hatching-route recovery after PC trips.
+- D/P/Pt battle-state and post-battle timing fixes.
+- Improved PP handling and between-battle lead switching.
+- Platinum Poké Ball / auto-catch compatibility improvements.
+- Save-after-target timing and input fixes.
+- Improved random-encounter behaviour.
+- melonDS Lua compatibility and dashboard connection improvements.
+
+For implementation details, see [`MODIFICATIONS.md`](MODIFICATIONS.md).
+
+## Credits and Licensing
+
+This is an **unofficial fork** of [PokéBot NDS](https://github.com/wyanido/pokebot-nds) by **wyanido**.
+
+PokéBot NDS is distributed under the MIT License. The original copyright and license notice are preserved in [`LICENSE`](LICENSE).
+
+This repository also includes the LuaSocket runtime component used by the dashboard. Its license notice is included in [`THIRD_PARTY_LUASOCKET_LICENSE.txt`](THIRD_PARTY_LUASOCKET_LICENSE.txt).
+
+This fork is not endorsed by or maintained by the original PokéBot NDS author.
+
+Special Thanks kept below as it still applies.
 
 ## Special Thanks
 
