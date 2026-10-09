@@ -2,6 +2,8 @@
 
 <img src='https://i.imgur.com/lHaYC4z.png' width='600px'>
 
+ChatGPT Coded this.
+
 An unofficial fork of **PokéBot NDS by wyanido**, focused on improved Pokémon Diamond, Pearl and Platinum automation and melonDS Lua compatibility.
 
 This fork keeps the original PokéBot functionality while adding and refining D/P/Pt automation, including improved daycare and egg-hatching behaviour, automatic PC depositing, encounter and battle timing fixes, Platinum compatibility improvements, and restored D/P/Pt starter resets.
