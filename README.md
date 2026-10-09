@@ -2,7 +2,7 @@
 
 <img src='https://i.imgur.com/lHaYC4z.png' width='600px'>
 
-ChatGPT Coded this.
+ChatGPT coded the changes.
 
 An unofficial fork of **PokéBot NDS by wyanido**, focused on improved Pokémon Diamond, Pearl and Platinum automation and melonDS Lua compatibility.
 
