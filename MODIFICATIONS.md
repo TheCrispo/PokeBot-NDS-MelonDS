@@ -41,3 +41,14 @@ LuaSocket is distributed under the MIT License. Its license notice is included i
 ## Distribution notes
 
 This repository does not include Pokémon ROMs, Nintendo BIOS/firmware dumps, or save files.
+
+
+## melonDS drawing-disable Focus integration (2026-10-29)
+
+Verified the existing dashboard Focus configuration and bot frame helper against
+the melonDS v0.3.21 Lua frame functions. Invisible frames activate its new
+presentation-disable path; normal frame advances release the Lua request.
+The manual emulator option remains independent. Nine on/off transitions passed,
+and dashboard true/false Boolean serialization passed without changing existing
+configuration values. Only help text/documentation changed: no Lua, dashboard
+JavaScript, emulator detection or game automation was modified.
